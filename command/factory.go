@@ -1,19 +1,17 @@
 package command
 
-import "errors"
+import (
+	"errors"
+)
 
-type Command interface {
-	Run([]string) (string, error)
-}
-
-func Build(cmd string) (Command, error) {
+func Build(cmd string, stateManager StateManager) (Command, error) {
 	switch cmd {
 	case "cf-add-target":
-		return CFAddTargetCommand{}, nil
+		return CFAddTargetCommand{stateManager}, nil
 	case "cf-target":
-		return CFTargetCommand{}, nil
+		return CFTargetCommand{stateManager}, nil
 	case "cf-targets":
-		return CFTargetsCommand{}, nil
+		return CFTargetsCommand{stateManager}, nil
 	default:
 		return nil, errors.New("cannot build command")
 	}

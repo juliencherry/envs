@@ -21,13 +21,11 @@ var _ = Describe("Envs", func() {
 		envStateFile, err := ioutil.TempFile("", "env-state")
 		Expect(err).NotTo(HaveOccurred())
 		envStateFilepath = envStateFile.Name()
-		pathToCLI, err = Build("github.com/juliencherry/envs")
+		pathToCLI, err = Build("github.com/juliencherry/envs", "-ldflags", "-X main.envStateFilepath="+envStateFilepath)
 		Expect(err).NotTo(HaveOccurred())
-		os.Setenv("ENV_STATE_FILEPATH", envStateFilepath)
 	})
 
 	AfterEach(func() {
-		os.Unsetenv("ENV_STATE_FILEPATH")
 		os.Remove(envStateFilepath)
 		CleanupBuildArtifacts()
 	})
