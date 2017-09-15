@@ -16,6 +16,9 @@ var _ = Describe("Manager", func() {
 		manager      state.Manager
 		someEnv      = "some-env"
 		someOtherEnv = "some-other-env"
+		someAPI      = "https://example.com/"
+		someUsername = "some-username"
+		somePassword = "some-password"
 	)
 
 	BeforeEach(func() {
@@ -35,26 +38,38 @@ var _ = Describe("Manager", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(envs).To(BeEmpty())
 
-		Expect(manager.SaveEnv(someEnv)).To(Succeed())
-		Expect(manager.SaveEnv(someOtherEnv)).To(Succeed())
+		Expect(manager.SaveEnv(someEnv, someAPI, someUsername, somePassword, true)).To(Succeed())
+		Expect(manager.SaveEnv(someOtherEnv, someAPI, someUsername, somePassword, true)).To(Succeed())
 
 		envs, err = manager.GetEnvs()
 		Expect(err).NotTo(HaveOccurred())
-		Expect(envs).To(Equal([]string{someEnv, someOtherEnv}))
+		Expect(envs).To(ConsistOf(someEnv, someOtherEnv))
+
+		api, username, password, skipSSLValidation, err := manager.GetEnvDetails(someEnv)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(api).To(Equal(someAPI))
+		Expect(username).To(Equal(someUsername))
+		Expect(password).To(Equal(somePassword))
+		Expect(skipSSLValidation).To(Equal(true))
 	})
 
 	It("does not allow the same environment to be added twice", func() {
-		Expect(manager.SaveEnv(someEnv)).To(Succeed())
-		Expect(manager.SaveEnv(someEnv)).To(MatchError("target already exists"))
+		Expect(manager.SaveEnv(someEnv, someAPI, someUsername, somePassword, false)).To(Succeed())
+		Expect(manager.SaveEnv(someEnv, someAPI, someUsername, somePassword, false)).To(MatchError("target already exists"))
 
 		envs, err := manager.GetEnvs()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(envs).To(Equal([]string{someEnv}))
 	})
 
+	It("errors when trying to get an environment that has not been saved", func() {
+		_, _, _, _, err := manager.GetEnvDetails(someEnv)
+		Expect(err).To(MatchError("environment not found"))
+	})
+
 	Context("when the state file does not exist", func() {
 		BeforeEach(func() {
-			os.Remove(path)
+			Expect(os.Remove(path)).To(Succeed())
 		})
 
 		Describe("#GetEnvs", func() {
@@ -68,7 +83,7 @@ var _ = Describe("Manager", func() {
 
 		Describe("#SaveEnv", func() {
 			It("creates the state file", func() {
-				Expect(manager.SaveEnv(someEnv)).To(Succeed())
+				Expect(manager.SaveEnv(someEnv, someAPI, someUsername, somePassword, false)).To(Succeed())
 				Expect(path).To(BeAnExistingFile())
 			})
 		})

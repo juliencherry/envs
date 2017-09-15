@@ -2,7 +2,9 @@ package command
 
 import (
 	"errors"
+	"flag"
 	"fmt"
+	"io/ioutil"
 )
 
 type CFAddTargetCommand struct {
@@ -10,16 +12,46 @@ type CFAddTargetCommand struct {
 }
 
 func (c CFAddTargetCommand) Run(args []string) (string, error) {
-	if len(args) < 1 {
-		return "", errors.New("Missing required argument")
+	flags := flag.NewFlagSet("cf-add-target", flag.ContinueOnError)
+	flags.SetOutput(ioutil.Discard)
+
+	envName := flags.String("name", "", "")
+	api := flags.String("api", "", "")
+	username := flags.String("username", "", "")
+	password := flags.String("password", "", "")
+	skipSSLValidation := flags.Bool("skip-ssl-validation", false, "")
+
+	flags.StringVar(envName, "n", "", "")
+	flags.StringVar(api, "a", "", "")
+	flags.StringVar(username, "u", "", "")
+	flags.StringVar(password, "p", "", "")
+	flags.BoolVar(skipSSLValidation, "s", false, "")
+
+	err := flags.Parse(args)
+	if err != nil {
+		return "", fmt.Errorf("cannot parse flags: %s", err)
 	}
 
-	targetName := args[0]
+	if *envName == "" {
+		return "", errors.New("`name` flag required")
+	}
 
-	err := c.StateManager.SaveEnv(targetName)
+	if *api == "" {
+		return "", errors.New("`api` flag required")
+	}
+
+	if *username == "" {
+		return "", errors.New("`username` flag required")
+	}
+
+	if *password == "" {
+		return "", errors.New("`password` flag required")
+	}
+
+	err = c.StateManager.SaveEnv(*envName, *api, *username, *password, *skipSSLValidation)
 	if err != nil {
 		return "", err
 	}
 
-	return fmt.Sprintf(`Added target "%s"`, targetName), nil
+	return fmt.Sprintf(`Added target "%s"`, *envName), nil
 }

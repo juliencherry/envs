@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/juliencherry/envs/cf"
 	"github.com/juliencherry/envs/command"
 	"github.com/juliencherry/envs/state"
 )
@@ -21,7 +22,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	cmd, err := command.Build(os.Args[1], state.Manager{Path: envStateFilepath})
+	cmd, err := command.Build(os.Args[1], cf.CLIManager{}, state.Manager{Path: envStateFilepath})
 	if err != nil {
 		fmt.Println("Invalid command:", err)
 		os.Exit(1)

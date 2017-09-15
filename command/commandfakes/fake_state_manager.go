@@ -8,6 +8,25 @@ import (
 )
 
 type FakeStateManager struct {
+	GetEnvDetailsStub        func(env string) (api string, username string, password string, skipSSLValidation bool, err error)
+	getEnvDetailsMutex       sync.RWMutex
+	getEnvDetailsArgsForCall []struct {
+		env string
+	}
+	getEnvDetailsReturns struct {
+		result1 string
+		result2 string
+		result3 string
+		result4 bool
+		result5 error
+	}
+	getEnvDetailsReturnsOnCall map[int]struct {
+		result1 string
+		result2 string
+		result3 string
+		result4 bool
+		result5 error
+	}
 	GetEnvsStub        func() ([]string, error)
 	getEnvsMutex       sync.RWMutex
 	getEnvsArgsForCall []struct{}
@@ -19,10 +38,14 @@ type FakeStateManager struct {
 		result1 []string
 		result2 error
 	}
-	SaveEnvStub        func(env string) error
+	SaveEnvStub        func(envName string, api string, username string, password string, skipSSLValidation bool) error
 	saveEnvMutex       sync.RWMutex
 	saveEnvArgsForCall []struct {
-		env string
+		envName           string
+		api               string
+		username          string
+		password          string
+		skipSSLValidation bool
 	}
 	saveEnvReturns struct {
 		result1 error
@@ -32,6 +55,66 @@ type FakeStateManager struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeStateManager) GetEnvDetails(env string) (api string, username string, password string, skipSSLValidation bool, err error) {
+	fake.getEnvDetailsMutex.Lock()
+	ret, specificReturn := fake.getEnvDetailsReturnsOnCall[len(fake.getEnvDetailsArgsForCall)]
+	fake.getEnvDetailsArgsForCall = append(fake.getEnvDetailsArgsForCall, struct {
+		env string
+	}{env})
+	fake.recordInvocation("GetEnvDetails", []interface{}{env})
+	fake.getEnvDetailsMutex.Unlock()
+	if fake.GetEnvDetailsStub != nil {
+		return fake.GetEnvDetailsStub(env)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2, ret.result3, ret.result4, ret.result5
+	}
+	return fake.getEnvDetailsReturns.result1, fake.getEnvDetailsReturns.result2, fake.getEnvDetailsReturns.result3, fake.getEnvDetailsReturns.result4, fake.getEnvDetailsReturns.result5
+}
+
+func (fake *FakeStateManager) GetEnvDetailsCallCount() int {
+	fake.getEnvDetailsMutex.RLock()
+	defer fake.getEnvDetailsMutex.RUnlock()
+	return len(fake.getEnvDetailsArgsForCall)
+}
+
+func (fake *FakeStateManager) GetEnvDetailsArgsForCall(i int) string {
+	fake.getEnvDetailsMutex.RLock()
+	defer fake.getEnvDetailsMutex.RUnlock()
+	return fake.getEnvDetailsArgsForCall[i].env
+}
+
+func (fake *FakeStateManager) GetEnvDetailsReturns(result1 string, result2 string, result3 string, result4 bool, result5 error) {
+	fake.GetEnvDetailsStub = nil
+	fake.getEnvDetailsReturns = struct {
+		result1 string
+		result2 string
+		result3 string
+		result4 bool
+		result5 error
+	}{result1, result2, result3, result4, result5}
+}
+
+func (fake *FakeStateManager) GetEnvDetailsReturnsOnCall(i int, result1 string, result2 string, result3 string, result4 bool, result5 error) {
+	fake.GetEnvDetailsStub = nil
+	if fake.getEnvDetailsReturnsOnCall == nil {
+		fake.getEnvDetailsReturnsOnCall = make(map[int]struct {
+			result1 string
+			result2 string
+			result3 string
+			result4 bool
+			result5 error
+		})
+	}
+	fake.getEnvDetailsReturnsOnCall[i] = struct {
+		result1 string
+		result2 string
+		result3 string
+		result4 bool
+		result5 error
+	}{result1, result2, result3, result4, result5}
 }
 
 func (fake *FakeStateManager) GetEnvs() ([]string, error) {
@@ -77,16 +160,20 @@ func (fake *FakeStateManager) GetEnvsReturnsOnCall(i int, result1 []string, resu
 	}{result1, result2}
 }
 
-func (fake *FakeStateManager) SaveEnv(env string) error {
+func (fake *FakeStateManager) SaveEnv(envName string, api string, username string, password string, skipSSLValidation bool) error {
 	fake.saveEnvMutex.Lock()
 	ret, specificReturn := fake.saveEnvReturnsOnCall[len(fake.saveEnvArgsForCall)]
 	fake.saveEnvArgsForCall = append(fake.saveEnvArgsForCall, struct {
-		env string
-	}{env})
-	fake.recordInvocation("SaveEnv", []interface{}{env})
+		envName           string
+		api               string
+		username          string
+		password          string
+		skipSSLValidation bool
+	}{envName, api, username, password, skipSSLValidation})
+	fake.recordInvocation("SaveEnv", []interface{}{envName, api, username, password, skipSSLValidation})
 	fake.saveEnvMutex.Unlock()
 	if fake.SaveEnvStub != nil {
-		return fake.SaveEnvStub(env)
+		return fake.SaveEnvStub(envName, api, username, password, skipSSLValidation)
 	}
 	if specificReturn {
 		return ret.result1
@@ -100,10 +187,10 @@ func (fake *FakeStateManager) SaveEnvCallCount() int {
 	return len(fake.saveEnvArgsForCall)
 }
 
-func (fake *FakeStateManager) SaveEnvArgsForCall(i int) string {
+func (fake *FakeStateManager) SaveEnvArgsForCall(i int) (string, string, string, string, bool) {
 	fake.saveEnvMutex.RLock()
 	defer fake.saveEnvMutex.RUnlock()
-	return fake.saveEnvArgsForCall[i].env
+	return fake.saveEnvArgsForCall[i].envName, fake.saveEnvArgsForCall[i].api, fake.saveEnvArgsForCall[i].username, fake.saveEnvArgsForCall[i].password, fake.saveEnvArgsForCall[i].skipSSLValidation
 }
 
 func (fake *FakeStateManager) SaveEnvReturns(result1 error) {
@@ -128,6 +215,8 @@ func (fake *FakeStateManager) SaveEnvReturnsOnCall(i int, result1 error) {
 func (fake *FakeStateManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.getEnvDetailsMutex.RLock()
+	defer fake.getEnvDetailsMutex.RUnlock()
 	fake.getEnvsMutex.RLock()
 	defer fake.getEnvsMutex.RUnlock()
 	fake.saveEnvMutex.RLock()
