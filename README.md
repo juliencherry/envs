@@ -12,3 +12,9 @@
 
 * `./envs cf-add-target -n <name> -a <api> -u <username> -p <password>`
 * `./envs cf-target [environment]`
+
+## Uninstallation
+
+* Remove the state file: `rm $HOME/.envs`      
+* Delete the source code:`rm -rf $HOME/go/src/github.com/juliencherry/envs`
+* Clean up remaining directories: `cd $HOME/go && find . -type d -empty -delete`
