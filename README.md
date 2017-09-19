@@ -6,4 +6,9 @@
 2. Clone this repository: `git clone https://github.com/juliencherry/envs.git $HOME/go/src/github.com/juliencherry/envs`
 3. Navigate to the source directory: `cd $HOME/go/src/github.com/juliencherry/envs`
 4. Compile the source code: `go build`
-5. Run the program: `./envs`...
+5. Run the program: `./envs`..
+
+## Usage
+
+* `./envs cf-add-target -n <name> -a <api> -u <username> -p <password>`
+* `./envs cf-target [environment]`
